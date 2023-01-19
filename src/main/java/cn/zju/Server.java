@@ -1,12 +1,14 @@
 package cn.zju;
 
-import cn.zju.util.ByteBufferUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 
@@ -25,7 +27,7 @@ public class Server {
         SelectionKey sscKey = ssc.register(selector, 0, null);
         sscKey.interestOps(SelectionKey.OP_ACCEPT); //处理Accept请求
         log.debug("SelectionKey:{}",sscKey);
-
+        boolean writeTest = true;
         while(true) {
             selector.select(); // choose a set of keys
             Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
@@ -46,6 +48,19 @@ public class Server {
                     scKey.interestOps(SelectionKey.OP_READ);
                     log.debug("socketChannel:{}", socketChannel);
                     log.debug("scKey:{}",scKey);
+                    if(writeTest) {
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < 5000000; i++) {
+                            sb.append("a");
+                        }
+                        ByteBuffer writeBuffer = Charset.defaultCharset().encode(sb.toString());
+                        int writeLen = socketChannel.write(writeBuffer);
+                        System.out.println(writeLen);
+                        if(writeBuffer.hasRemaining()) {
+                            scKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                            scKey.attach(writeBuffer);
+                        }
+                    }
                 }else if(key.isReadable()) {
                     try {
                         SocketChannel socketChannel = (SocketChannel) key.channel();
@@ -65,6 +80,15 @@ public class Server {
                     } catch (IOException e) {
                         e.printStackTrace();
                         key.cancel();
+                    }
+                }else if(key.isWritable()) {
+                    ByteBuffer buffer = (ByteBuffer) key.attachment();
+                    SocketChannel sc = (SocketChannel) key.channel();
+                    int write = sc.write(buffer);
+                    System.out.println(write);
+                    if (!buffer.hasRemaining()) {
+                        key.attach(null); // 需要清除buffer
+                        key.interestOps(key.interestOps() - SelectionKey.OP_WRITE);//不需关注可写事件
                     }
                 }
             }
