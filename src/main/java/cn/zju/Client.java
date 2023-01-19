@@ -11,6 +11,7 @@ public class Client {
     public static void main(String[] args) throws IOException {
         SocketChannel sc = SocketChannel.open();
         sc.connect(new InetSocketAddress(8080));
-        System.out.println("waiting");
+        sc.write(Charset.defaultCharset().encode("0\n123456789abcdefghi\n"));
+        System.in.read();
     }
 }
