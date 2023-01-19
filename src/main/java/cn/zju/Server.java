@@ -27,7 +27,7 @@ public class Server {
         SelectionKey sscKey = ssc.register(selector, 0, null);
         sscKey.interestOps(SelectionKey.OP_ACCEPT); //处理Accept请求
         log.debug("SelectionKey:{}",sscKey);
-        boolean writeTest = true;
+        boolean writeTest = false;
         while(true) {
             selector.select(); // choose a set of keys
             Iterator<SelectionKey> iter = selector.selectedKeys().iterator();

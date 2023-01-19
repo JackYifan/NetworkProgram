@@ -12,16 +12,16 @@ public class Client {
     public static void main(String[] args) throws IOException {
         SocketChannel sc = SocketChannel.open();
         sc.connect(new InetSocketAddress(8080));
-        // sc.write(Charset.defaultCharset().encode("0\n123456789abcdefghi\n"));
-        // System.in.read();
+        sc.write(Charset.defaultCharset().encode("Hello\n"));
+        System.in.read();
         // 客户端接收数据
-        int count = 0;
-        while(true){
-            ByteBuffer buffer = ByteBuffer.allocate(1024 * 1024);
-            int len = sc.read(buffer);
-            count += len;
-            System.out.println("received: " + count);
-            buffer.clear();
-        }
+        // int count = 0;
+        // while(true){
+        //     ByteBuffer buffer = ByteBuffer.allocate(1024 * 1024);
+        //     int len = sc.read(buffer);
+        //     count += len;
+        //     System.out.println("received: " + count);
+        //     buffer.clear();
+        // }
     }
 }
